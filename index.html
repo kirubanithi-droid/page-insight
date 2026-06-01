@@ -9,10 +9,6 @@
         body { background-color: #0b0f19; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; }
         .glow-input:focus { box-shadow: 0 0 15px rgba(99, 102, 241, 0.15); border-color: #6366f1; }
         .premium-card { background: linear-gradient(145deg, #111827, #0f172a); border: 1px solid #1e293b; }
-        .score-badge { border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-family: monospace; }
-        .score-good { color: #10b981; bg-color: rgba(16, 185, 129, 0.1); }
-        .score-average { color: #f59e0b; bg-color: rgba(245, 158, 11, 0.1); }
-        .score-poor { color: #ef4444; bg-color: rgba(239, 68, 68, 0.1); }
     </style>
 </head>
 <body class="min-h-screen px-4 py-8 md:p-12">
@@ -90,6 +86,7 @@
 
         async function initiateAnalysis() {
             const txtArea = document.getElementById('domains-area').value;
+            // Clean values and filter out empty inputs
             const domainList = txtArea.split('\n').map(str => str.trim()).filter(str => str.length > 0);
 
             if(domainList.length === 0) {
@@ -106,23 +103,22 @@
             counter.innerText = `Completed: 0/${domainList.length}`;
 
             // STEP 1: INSTANT ROW RENDERING (Zero Wait Time)
-            domainList.forEach((domain) => {
+            domainList.forEach((domain, idx) => {
                 let cleanUrl = domain;
                 if (!/^https?:\/\//i.test(cleanUrl)) cleanUrl = 'https://' + cleanUrl;
                 
-                // Direct Google PageSpeed official console layout redirect url generator
                 const officialInsightsUrl = `https://pagespeed.web.dev/analysis/${encodeURIComponent(cleanUrl)}?form_factor=${activeStrategy}`;
-                const rowId = `row-${btoa(domain).replace(/=/g, '')}`;
+                const rowId = `row-${idx}`; // Safe index-based row identifier
 
                 const tr = document.createElement('tr');
                 tr.id = rowId;
                 tr.className = "hover:bg-slate-900/40 transition-colors";
                 tr.innerHTML = `
                     <td class="px-6 py-4 font-semibold text-slate-200">${domain}</td>
-                    <td class="px-6 py-4 text-center"><span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700/60 animate-pulse">Queueing...</span></td>
-                    <td class="px-6 py-4 text-slate-600 font-mono text-sm">—</td>
-                    <td class="px-6 py-4 text-slate-600 font-mono text-sm">—</td>
-                    <td class="px-6 py-4 text-slate-600 font-mono text-sm">—</td>
+                    <td class="px-6 py-4 text-center"><span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700/60 animate-pulse">Processing...</span></td>
+                    <td class="px-6 py-4 text-slate-500 font-mono text-sm">—</td>
+                    <td class="px-6 py-4 text-slate-500 font-mono text-sm">—</td>
+                    <td class="px-6 py-4 text-slate-500 font-mono text-sm">—</td>
                     <td class="px-6 py-4 text-right">
                         <a href="${officialInsightsUrl}" target="_blank" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-indigo-400 hover:text-indigo-300 font-bold text-xs py-1.5 px-3 rounded-lg shadow transition-all">
                             Open Official Report ↗
@@ -132,31 +128,37 @@
                 tbody.appendChild(tr);
             });
 
-            // STEP 2: SAFE CONCURRENT QUEUE PROCESSING (Background fetching without rate-limit block)
+            // STEP 2: BACKGROUND BATCH QUEUE
             let completedCount = 0;
-            const CONCURRENCY_LIMIT = 2; // Process 2 domains at a time safely
+            const CONCURRENCY_LIMIT = 2; // Throttle requests to dodge rate-limiting errors
 
             async function processQueue(index) {
                 if (index >= domainList.length) return;
+                
                 const domain = domainList[index];
                 let formattedUrl = domain;
                 if (!/^https?:\/\//i.test(formattedUrl)) formattedUrl = 'https://' + formattedUrl;
                 
-                const rowId = `row-${btoa(domain).replace(/=/g, '')}`;
+                const rowId = `row-${index}`;
                 const rowElement = document.getElementById(rowId);
 
                 try {
+                    // Correct V5 parameters mapped with accurate encoding
                     const callUrl = `https://pagespeedonline.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(formattedUrl)}&strategy=${activeStrategy}&key=${API_KEY}`;
+                    
                     const res = await fetch(callUrl);
+                    if (!res.ok) throw new Error('API request failed');
+                    
                     const json = await res.json();
-
-                    if(json.error) throw new Error();
+                    if (json.error) throw new Error(json.error.message);
 
                     const lh = json.lighthouseResult;
                     const finalScore = Math.round(lh.categories.performance.score * 100);
-                    const fcp = lh.audits['first-contentful-paint'].displayValue || 'N/A';
-                    const lcp = lh.audits['largest-contentful-paint'].displayValue || 'N/A';
-                    const sIdx = lh.audits['speed-index'].displayValue || 'N/A';
+                    
+                    // Web vitals extraction safely checked with fallback values
+                    const fcp = lh.audits['first-contentful-paint']?.displayValue || 'N/A';
+                    const lcp = lh.audits['largest-contentful-paint']?.displayValue || 'N/A';
+                    const sIdx = lh.audits['speed-index']?.displayValue || 'N/A';
 
                     let colorHex = finalScore >= 90 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : finalScore >= 50 ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-rose-400 bg-rose-500/10 border-rose-500/30';
 
@@ -170,6 +172,7 @@
                         rowElement.children[4].className = "px-6 py-4 text-slate-300 font-mono text-sm";
                     }
                 } catch (e) {
+                    console.error("Error context:", e);
                     if (rowElement) {
                         rowElement.children[1].innerHTML = `<span class="px-2 py-0.5 text-xs font-bold rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">Failed</span>`;
                     }
@@ -178,11 +181,11 @@
                 completedCount++;
                 counter.innerText = `Completed: ${completedCount}/${domainList.length}`;
                 
-                // Next item-ai batch trigger panrom
+                // Continuous background pipeline trigger
                 await processQueue(index + CONCURRENCY_LIMIT);
             }
 
-            // Fire parallel channels
+            // Launch safe background processes instantly
             for (let i = 0; i < CONCURRENCY_LIMIT; i++) {
                 processQueue(i);
             }
