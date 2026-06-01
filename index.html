@@ -3,67 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk PageSpeed Analyzer</title>
+    <title>Bulk PageSpeed Pro Analyzer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
-        .glow-button { transition: all 0.3s ease; box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
-        .glow-button:hover { box-shadow: 0 0 25px rgba(99, 102, 241, 0.7); transform: translateY(-1px); }
-        .score-circle { border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; font-weight: bold; }
-        .score-good { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 2px solid #10b981; }
-        .score-average { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 2px solid #f59e0b; }
-        .score-poor { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 2px solid #ef4444; }
+        body { background-color: #0b0f19; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; }
+        .glow-input:focus { box-shadow: 0 0 15px rgba(99, 102, 241, 0.15); border-color: #6366f1; }
+        .premium-card { background: linear-gradient(145deg, #111827, #0f172a); border: 1px solid #1e293b; }
+        .score-badge { border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-family: monospace; }
+        .score-good { color: #10b981; bg-color: rgba(16, 185, 129, 0.1); }
+        .score-average { color: #f59e0b; bg-color: rgba(245, 158, 11, 0.1); }
+        .score-poor { color: #ef4444; bg-color: rgba(239, 68, 68, 0.1); }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="min-h-screen px-4 py-8 md:p-12">
 
     <div class="max-w-6xl mx-auto">
-        <div class="text-center my-8">
-            <span class="bg-indigo-600/20 text-indigo-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-indigo-500/30 tracking-wider uppercase">⚡ PageSpeed Pro</span>
-            <h1 class="text-4xl md:text-5xl font-black mt-4 bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent">Bulk PageSpeed Analyzer</h1>
-            <p class="text-slate-400 mt-2">Check multiple domains at once using Google PageSpeed Insights API</p>
+        <div class="text-center mb-10">
+            <span class="bg-indigo-500/10 text-indigo-400 text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full border border-indigo-500/20">⚡ ULTRA FAST PROCESSOR</span>
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight mt-3 bg-gradient-to-r from-white via-slate-300 to-indigo-300 bg-clip-text text-transparent">Bulk PageSpeed Analyzer</h1>
+            <p class="text-slate-400 mt-2 text-sm md:text-base">Instant dashboard generation with parallel queue background processing</p>
         </div>
 
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 md:p-8 backdrop-blur-xl shadow-xl max-w-3xl mx-auto mb-10">
-            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">🌐 Enter Domains (One per line)</label>
-            <textarea id="domains-input" rows="5" class="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono text-sm transition-all resize-none" placeholder="sparkasse.de&#10;verdi.de&#10;google.com"></textarea>
-            
-            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
-                <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800/80 w-full sm:w-auto">
-                    <button id="btn-desktop" onclick="setStrategy('desktop')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md">💻 Desktop</button>
-                    <button id="btn-mobile" onclick="setStrategy('mobile')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition-all">📱 Mobile</button>
+        <div class="premium-card rounded-2xl p-6 md:p-8 max-w-3xl mx-auto shadow-2xl mb-10">
+            <div class="mb-5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">🌐 Domain Lists (Paste multi-lines)</label>
+                <textarea id="domains-area" rows="5" class="w-full bg-slate-950/90 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none font-mono text-sm transition-all glow-input resize-none" placeholder="sparkasse.de&#10;verdi.de&#10;google.com"></textarea>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
+                    <button id="strategy-desktop" onclick="toggleStrategy('desktop')" class="flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all bg-indigo-600 text-white">💻 Desktop</button>
+                    <button id="strategy-mobile" onclick="toggleStrategy('mobile')" class="flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 transition-all">📱 Mobile</button>
                 </div>
-                <button id="start-btn" onclick="analyzeDomains()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-3 rounded-xl glow-button flex items-center justify-center gap-2">
-                    <span id="btn-text">Analyze All</span>
-                    <svg id="loading-spinner" class="hidden animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+
+                <button id="action-btn" onclick="initiateAnalysis()" class="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm tracking-wider uppercase px-8 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
+                    <span>Generate Instant Board</span>
                 </button>
             </div>
         </div>
 
-        <div id="progress-container" class="hidden max-w-3xl mx-auto mb-6 bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <div class="flex justify-between text-xs font-bold text-slate-400 mb-2">
-                <span id="progress-text">Processing: 0 / 0</span>
-                <span id="progress-percent">0%</span>
+        <div id="dashboard-sheet" class="hidden premium-card rounded-2xl overflow-hidden shadow-2xl">
+            <div class="p-5 bg-slate-900/60 border-b border-slate-800/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-200">Analysis Queue Monitor</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Rows injected instantly. Safe API calls are executing in background queues.</p>
+                </div>
+                <div class="flex items-center gap-3 text-xs bg-slate-950 px-4 py-2 rounded-lg border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
+                    <span id="queue-counter" class="font-mono text-slate-300">Completed: 0/0</span>
+                </div>
             </div>
-            <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800/50">
-                <div id="progress-bar" class="bg-indigo-500 h-full w-0 transition-all duration-300"></div>
-            </div>
-        </div>
 
-        <div id="results-container" class="hidden bg-slate-900/40 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-900/90 text-slate-400 font-bold text-xs uppercase tracking-wider border-b border-slate-800">
-                            <th class="px-6 py-4">Domain</th>
-                            <th class="px-6 py-4 text-center">Performance</th>
-                            <th class="px-6 py-4">FCP</th>
-                            <th class="px-6 py-4">LCP</th>
+                        <tr class="bg-slate-950/40 text-slate-400 font-bold text-xs uppercase tracking-wider border-b border-slate-800">
+                            <th class="px-6 py-4">Target Domain</th>
+                            <th class="px-6 py-4 text-center">API Score</th>
+                            <th class="px-6 py-4">FCP Metric</th>
+                            <th class="px-6 py-4">LCP Metric</th>
                             <th class="px-6 py-4">Speed Index</th>
-                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4 text-right">Instant Live View</th>
                         </tr>
                     </thead>
-                    <tbody id="results-body" class="divide-y divide-slate-800/60 bg-slate-950/20">
+                    <tbody id="sheet-body" class="divide-y divide-slate-800/50 bg-slate-950/10">
                         </tbody>
                 </table>
             </div>
@@ -71,141 +74,118 @@
     </div>
 
     <script>
-        // Unga API Key integrate panniyachu
         const API_KEY = "AIzaSyDO784sLEuLEXakAO1TvqIwL0A0_356ync";
-        let currentStrategy = 'desktop';
+        let activeStrategy = 'desktop';
 
-        function setStrategy(strategy) {
-            currentStrategy = strategy;
-            const desktopBtn = document.getElementById('btn-desktop');
-            const mobileBtn = document.getElementById('btn-mobile');
+        function toggleStrategy(mode) {
+            activeStrategy = mode;
+            document.getElementById('strategy-desktop').className = mode === 'desktop' 
+                ? "flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all bg-indigo-600 text-white"
+                : "flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 transition-all";
             
-            if (strategy === 'desktop') {
-                desktopBtn.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md";
-                mobileBtn.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition-all";
-            } else {
-                mobileBtn.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md";
-                desktopBtn.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 transition-all";
-            }
+            document.getElementById('strategy-mobile').className = mode === 'mobile' 
+                ? "flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all bg-indigo-600 text-white"
+                : "flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 transition-all";
         }
 
-        function getScoreClass(score) {
-            if (score >= 90) return 'score-good';
-            if (score >= 50) return 'score-average';
-            return 'score-poor';
-        }
+        async function initiateAnalysis() {
+            const txtArea = document.getElementById('domains-area').value;
+            const domainList = txtArea.split('\n').map(str => str.trim()).filter(str => str.length > 0);
 
-        async function analyzeDomains() {
-            const input = document.getElementById('domains-input').value;
-            const domains = input.split('\n').map(d => d.strip()).filter(d => d.length > 0);
-            
-            if (domains.length === 0) {
-                alert('Oru domain aachum enter pannunga boss!');
+            if(domainList.length === 0) {
+                alert('Annan thambi, ethavathu domain entry podunga!');
                 return;
             }
 
-            // UI Resetting for Execution
-            const startBtn = document.getElementById('start-btn');
-            const btnText = document.getElementById('btn-text');
-            const spinner = document.getElementById('loading-spinner');
-            const progressContainer = document.getElementById('progress-container');
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-            const progressPercent = document.getElementById('progress-percent');
-            const resultsContainer = document.getElementById('results-container');
-            const tbody = document.getElementById('results-body');
+            const sheet = document.getElementById('dashboard-sheet');
+            const tbody = document.getElementById('sheet-body');
+            const counter = document.getElementById('queue-counter');
 
-            startBtn.disabled = true;
-            btnText.innerText = "Analyzing...";
-            spinner.classList.remove('hidden');
-            progressContainer.classList.remove('hidden');
-            resultsContainer.classList.remove('hidden');
+            sheet.classList.remove('hidden');
             tbody.innerHTML = '';
+            counter.innerText = `Completed: 0/${domainList.length}`;
 
-            let completed = 0;
-            progressText.innerText = `Processing: 0 / ${domains.length}`;
-            progressBar.style.width = '0%';
-            progressPercent.innerText = '0%';
-
-            // Processing domains asynchronously in batches/parallel
-            const promises = domains.map(async (domain) => {
-                // Formatting URL properly
-                let targetUrl = domain;
-                if (!/^https?:\/\//i.test(targetUrl)) {
-                    targetUrl = 'https://' + targetUrl;
-                }
-
-                // Append temporary table row for showing 'Pending/Loading' status
+            // STEP 1: INSTANT ROW RENDERING (Zero Wait Time)
+            domainList.forEach((domain) => {
+                let cleanUrl = domain;
+                if (!/^https?:\/\//i.test(cleanUrl)) cleanUrl = 'https://' + cleanUrl;
+                
+                // Direct Google PageSpeed official console layout redirect url generator
+                const officialInsightsUrl = `https://pagespeed.web.dev/analysis/${encodeURIComponent(cleanUrl)}?form_factor=${activeStrategy}`;
                 const rowId = `row-${btoa(domain).replace(/=/g, '')}`;
+
                 const tr = document.createElement('tr');
                 tr.id = rowId;
-                tr.className = "hover:bg-slate-900/30 transition-colors";
+                tr.className = "hover:bg-slate-900/40 transition-colors";
                 tr.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-slate-300">${domain}</td>
-                    <td class="px-6 py-4 text-center">—</td>
-                    <td class="px-6 py-4 text-slate-500">—</td>
-                    <td class="px-6 py-4 text-slate-500">—</td>
-                    <td class="px-6 py-4 text-slate-500">—</td>
-                    <td class="px-6 py-4"><span class="text-xs font-bold text-amber-500 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-md animate-pulse">Running...</span></td>
+                    <td class="px-6 py-4 font-semibold text-slate-200">${domain}</td>
+                    <td class="px-6 py-4 text-center"><span class="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700/60 animate-pulse">Queueing...</span></td>
+                    <td class="px-6 py-4 text-slate-600 font-mono text-sm">—</td>
+                    <td class="px-6 py-4 text-slate-600 font-mono text-sm">—</td>
+                    <td class="px-6 py-4 text-slate-600 font-mono text-sm">—</td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="${officialInsightsUrl}" target="_blank" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-indigo-400 hover:text-indigo-300 font-bold text-xs py-1.5 px-3 rounded-lg shadow transition-all">
+                            Open Official Report ↗
+                        </a>
+                    </td>
                 `;
                 tbody.appendChild(tr);
-
-                try {
-                    // Google PageSpeed Insights V5 endpoint calling
-                    const apiUrl = `https://pagespeedonline.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(targetUrl)}&strategy=${currentStrategy}&key=${API_KEY}`;
-                    const response = await fetch(apiUrl);
-                    const data = await response.json();
-
-                    if(data.error) throw new Error(data.error.message);
-
-                    const lighthouse = data.lighthouseResult;
-                    const performanceScore = Math.round(lighthouse.categories.performance.score * 100);
-                    
-                    // Crucial Web Vitals metrics formatting
-                    const fcp = lighthouse.audits['first-contentful-paint'].displayValue || 'N/A';
-                    const lcp = lighthouse.audits['largest-contentful-paint'].displayValue || 'N/A';
-                    const speedIndex = lighthouse.audits['speed-index'].displayValue || 'N/A';
-
-                    const targetRow = document.getElementById(rowId);
-                    const scoreClass = getScoreClass(performanceScore);
-
-                    // Injecting successful fetched data into existing row
-                    targetRow.innerHTML = `
-                        <td class="px-6 py-4 font-semibold text-slate-200">${domain}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="score-circle ${scoreClass}">${performanceScore}</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm font-mono text-slate-300">${fcp}</td>
-                        <td class="px-6 py-4 text-sm font-mono text-slate-300">${lcp}</td>
-                        <td class="px-6 py-4 text-sm font-mono text-slate-300">${speedIndex}</td>
-                        <td class="px-6 py-4"><span class="text-xs font-bold text-emerald-400 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-md">Success</span></td>
-                    `;
-                } catch (error) {
-                    const targetRow = document.getElementById(rowId);
-                    targetRow.innerHTML = `
-                        <td class="px-6 py-4 font-semibold text-slate-400">${domain}</td>
-                        <td class="px-6 py-4 text-center"><span class="score-circle score-poor">Err</span></td>
-                        <td class="px-6 py-4 text-slate-600">—</td>
-                        <td class="px-6 py-4 text-slate-600">—</td>
-                        <td class="px-6 py-4 text-slate-600">—</td>
-                        <td class="px-6 py-4"><span class="text-xs font-bold text-rose-400 px-2 py-1 bg-rose-500/10 border border-rose-500/20 rounded-md" title="${error.message}">Failed</span></td>
-                    `;
-                }
-
-                // Updating common progress tracker
-                completed++;
-                const percentage = Math.round((completed / domains.length) * 100);
-                progressText.innerText = `Processing: ${completed} / ${domains.length}`;
-                progressBar.style.width = `${percentage}%`;
-                progressPercent.innerText = `${percentage}%`;
             });
 
-            await Promise.all(promises);
+            // STEP 2: SAFE CONCURRENT QUEUE PROCESSING (Background fetching without rate-limit block)
+            let completedCount = 0;
+            const CONCURRENCY_LIMIT = 2; // Process 2 domains at a time safely
 
-            // Reverting UI state after execution complete
-            startBtn.disabled = false;
-            btnText.innerText = "Analyze All";
-            spinner.classList.add('hidden');
+            async function processQueue(index) {
+                if (index >= domainList.length) return;
+                const domain = domainList[index];
+                let formattedUrl = domain;
+                if (!/^https?:\/\//i.test(formattedUrl)) formattedUrl = 'https://' + formattedUrl;
+                
+                const rowId = `row-${btoa(domain).replace(/=/g, '')}`;
+                const rowElement = document.getElementById(rowId);
+
+                try {
+                    const callUrl = `https://pagespeedonline.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(formattedUrl)}&strategy=${activeStrategy}&key=${API_KEY}`;
+                    const res = await fetch(callUrl);
+                    const json = await res.json();
+
+                    if(json.error) throw new Error();
+
+                    const lh = json.lighthouseResult;
+                    const finalScore = Math.round(lh.categories.performance.score * 100);
+                    const fcp = lh.audits['first-contentful-paint'].displayValue || 'N/A';
+                    const lcp = lh.audits['largest-contentful-paint'].displayValue || 'N/A';
+                    const sIdx = lh.audits['speed-index'].displayValue || 'N/A';
+
+                    let colorHex = finalScore >= 90 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : finalScore >= 50 ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' : 'text-rose-400 bg-rose-500/10 border-rose-500/30';
+
+                    if (rowElement) {
+                        rowElement.children[1].innerHTML = `<span class="px-2.5 py-1 text-xs font-mono font-bold rounded-md border ${colorHex}">${finalScore}/100</span>`;
+                        rowElement.children[2].innerText = fcp;
+                        rowElement.children[2].className = "px-6 py-4 text-slate-300 font-mono text-sm";
+                        rowElement.children[3].innerText = lcp;
+                        rowElement.children[3].className = "px-6 py-4 text-slate-300 font-mono text-sm";
+                        rowElement.children[4].innerText = sIdx;
+                        rowElement.children[4].className = "px-6 py-4 text-slate-300 font-mono text-sm";
+                    }
+                } catch (e) {
+                    if (rowElement) {
+                        rowElement.children[1].innerHTML = `<span class="px-2 py-0.5 text-xs font-bold rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">Failed</span>`;
+                    }
+                }
+
+                completedCount++;
+                counter.innerText = `Completed: ${completedCount}/${domainList.length}`;
+                
+                // Next item-ai batch trigger panrom
+                await processQueue(index + CONCURRENCY_LIMIT);
+            }
+
+            // Fire parallel channels
+            for (let i = 0; i < CONCURRENCY_LIMIT; i++) {
+                processQueue(i);
+            }
         }
     </script>
 </body>
